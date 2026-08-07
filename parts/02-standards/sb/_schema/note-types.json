@@ -1,0 +1,76 @@
+{
+  "$comment": "Your rules, as data rather than prose, so a program can check them instead of a person having to remember them. Deliberately short. A list of forty kinds nobody reads is the same as no list at all - add a kind when you find yourself wanting it, not in advance.",
+  "version": 1,
+  "base_required": [
+    "date",
+    "type"
+  ],
+  "canonical_types": {
+    "person": "A human being",
+    "project": "Something with an outcome and an end",
+    "area": "Something ongoing with no end - finance, health, a client base",
+    "meeting": "What happened when people spoke",
+    "transcript": "The words of something spoken, kept verbatim",
+    "resource": "Something you read or watched, captured on its author's terms",
+    "note": "A thought, a decision, an observation",
+    "decision": "A decision and the reasoning behind it",
+    "idea": "Something unformed you did not want to lose",
+    "reference": "A pointer to something outside your system",
+    "index": "A page whose job is to point at other pages",
+    "redirect": "A stub that points at the note which replaced it"
+  },
+  "aliases": {
+    "$comment": "Kinds that mean the same as one already on the list. The repair tool rewrites these; it never guesses at anything else.",
+    "people": "person",
+    "notes": "note",
+    "meeting-notes": "meeting",
+    "book": "resource",
+    "article": "resource",
+    "moc": "index"
+  },
+  "domain_types": {
+    "$comment": "Kinds that are legal only inside one top-level folder. Starts empty on purpose. When a kind of note turns out to belong to one part of your work and nowhere else, it goes here rather than onto the main list, so the main list stays short enough to read."
+  },
+  "naming": {
+    "$comment": "Notes link to each other by NAME, so a name is an identity. Two notes with one name means every link to that name is a coin toss, and the reader is never told a toss happened.",
+    "law": [
+      "One name, one thing.",
+      "Where a subject genuinely needs two notes, one of them references the other so a reader is never left choosing.",
+      "A file whose name only makes sense inside its folder - index, readme, notes - may repeat, but every link to it must name the folder too."
+    ],
+    "scaffold_stems": [
+      "index",
+      "readme",
+      "notes",
+      "overview",
+      "instructions",
+      "log",
+      "template"
+    ]
+  },
+  "scope": {
+    "$comment": "What counts as a note. Anything not a note is left alone: code, downloads, exports, archives. Without this the check complains about files that were never yours to keep tidy - which is how a check gets ignored. exclude_files covers the machinery that lives beside your notes - the rulebook is instructions to your AI, not a note about anything, and counting it as one makes the very first check report a fault on a brand-new system. .claude holds instructions to your AI and _engine holds the tools - neither is a note about anything. Found by installing all four parts on a clean machine and seeing the check count six pieces of machinery as notes.",
+    "exclude_path_parts": [
+      ".git",
+      ".obsidian",
+      "node_modules",
+      "__pycache__",
+      ".venv",
+      "venv",
+      "vault-health",
+      "Archive",
+      ".claude",
+      "_layers",
+      "_engine"
+    ],
+    "external_name_sources": [
+      "~/.claude/agents"
+    ],
+    "exclude_files": [
+      "CLAUDE.md",
+      "README.md",
+      "AGENTS.md",
+      ".gitignore"
+    ]
+  }
+}
