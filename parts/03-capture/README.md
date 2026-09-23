@@ -25,11 +25,17 @@ Four ways in, matching the four ways material actually reaches a business.
 |---|---|
 | Long documents | Contracts, reports, books, anything of length |
 | Spoken word | Client calls, meetings, voice notes |
+| YouTube | Any video with subtitles - the words only, never the video |
 | The web | Articles, competitor pages, research |
 | Your own head | Decisions and their reasoning, what you charge, what you refuse |
 
-Plus one command that takes anything at all and works out where it goes, and five assistants with
+Plus one command that takes anything at all and works out where it goes, and six assistants with
 one job each.
+
+One of them takes a YouTube link, keeps the video's words as a transcript, and writes a summary
+note with a link to the moment each point was made. It lives in its own folder,
+`youtube-to-notes/`, so it can also be given to anyone on its own: copy that folder into your AI's
+skills folder, or into your second brain, and paste it a YouTube link.
 
     python install.py
 

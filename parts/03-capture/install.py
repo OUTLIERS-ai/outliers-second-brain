@@ -19,6 +19,8 @@ Needs: Python 3.8 or newer, and Layers 1 and 2 already installed.
 """
 
 import json
+import os
+import shutil
 import sys
 from datetime import date
 from pathlib import Path
@@ -46,6 +48,14 @@ ASSISTANTS = {
                                     "duplicates, and works from the original note rather than its "
                                     "own previous tidy-up."),
 }
+
+# The YouTube assistant is a self-contained folder - instructions plus the helper that pulls the
+# words - so it can also be handed to anyone on its own. SKILL.md is the single source of its
+# instructions; the Claude Code assistant file is written from it, never kept as a second copy.
+YOUTUBE_NAME = "the-youtube-reader"
+YOUTUBE_SKILL = "youtube-to-notes"
+YOUTUBE_TOOLS = "Read, Write, Edit, Glob, Grep, Bash"
+
 
 CAPTURE_CMD = """---
 description: Put something into the second brain without deciding where it goes
@@ -93,6 +103,14 @@ tools: Read, Write, Edit, Glob, Grep
 Say so plainly and leave it out. Something missing is a gap. Something invented is a fault that
 everything downstream inherits, and nobody rechecks the bottom of the pile.
 """
+
+
+def write_file(path, text):
+    """Write in one go through a temporary file, so a crash never leaves half a file behind."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(text, encoding="utf-8", newline="\n")
+    os.replace(str(tmp), str(path))
 
 
 def ask(q, default=""):
@@ -170,6 +188,31 @@ def main():
                                   name, job), encoding="utf-8")
         say("Installed %d assistants: %s" % (len(ASSISTANTS), ", ".join(ASSISTANTS)))
 
+        # The YouTube assistant. The same folder goes where Claude Code looks for skills and
+        # where Codex looks, and a Claude Code assistant is written from its instructions.
+        source = HERE / YOUTUBE_SKILL
+        for skills in (home / ".claude" / "skills", home / ".agents" / "skills"):
+            shutil.copytree(str(source), str(skills / YOUTUBE_SKILL), dirs_exist_ok=True,
+                            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        head, steps = (source / "SKILL.md").read_text(encoding="utf-8").split("---\n", 2)[1:]
+        description = [ln for ln in head.splitlines() if ln.startswith("description:")][0]
+        skill_dir = ".claude/skills/%s" % YOUTUBE_SKILL
+        write_file(agents / ("%s.md" % YOUTUBE_NAME),
+                   "---\nname: %s\n%s\ntools: %s\n---\n%s" % (
+                       YOUTUBE_NAME, description, YOUTUBE_TOOLS,
+                       steps.replace("<this skill's folder>", skill_dir)))
+        say("Installed %s for YouTube links. Paste a link and ask for it in notes." % YOUTUBE_NAME)
+
+        # .agents holds instructions to an AI, like .claude, so the check from Layer 2 must not
+        # count it as notes. Without this, installing the assistant makes the check report WORSE.
+        schema_path = home / "_engine" / "_schema" / "note-types.json"
+        if schema_path.exists():
+            schema = json.loads(schema_path.read_text(encoding="utf-8"))
+            skip = schema.setdefault("scope", {}).setdefault("exclude_path_parts", [])
+            if ".agents" not in skip:
+                skip.append(".agents")
+                write_file(schema_path, json.dumps(schema, indent=2, ensure_ascii=False) + "\n")
+
     if never.strip():
         schema_path = home / "_engine" / "_schema" / "note-types.json"
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
@@ -189,6 +232,8 @@ def main():
         "| Long documents | Contracts, reports, books, anything of length | the-archivist, "
         "the-librarian |\n"
         "| Spoken word | Client calls, meetings, voice notes (%s) | the-scribe |\n"
+        "| YouTube | Any video with subtitles - the words only, never the video | "
+        "the-youtube-reader |\n"
         "| The web | Articles, competitor pages, research questions | the-researcher |\n"
         "| Your own head | Decisions and their reasoning, what you charge, what you refuse, "
         "what you changed your mind about | /capture |\n\n"

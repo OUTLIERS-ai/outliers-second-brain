@@ -28,7 +28,7 @@ them and still have something better than you had.
 
     parts/01-memory/       the folder, the rulebook, the copies, the pointer
     parts/02-standards/    your rules as data, the check, the repair tool, the tests
-    parts/03-capture/      four ways in, /capture, five assistants
+    parts/03-capture/      four ways in, /capture, six assistants (one for YouTube)
     parts/04-operations/   the record, the morning list, the gate, the timetable
     guide/                  the whole thing as one document
 
