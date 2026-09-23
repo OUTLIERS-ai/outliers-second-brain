@@ -215,13 +215,17 @@ def main():
 
     if never.strip():
         schema_path = home / "_engine" / "_schema" / "note-types.json"
-        schema = json.loads(schema_path.read_text(encoding="utf-8"))
-        for n in [s.strip() for s in never.split(",") if s.strip()]:
-            if n not in schema["scope"]["exclude_path_parts"]:
-                schema["scope"]["exclude_path_parts"].append(n)
-        schema_path.write_text(json.dumps(schema, indent=2, ensure_ascii=False) + "\n",
-                               encoding="utf-8")
-        say("Told the check to leave alone: %s" % never)
+        if schema_path.exists():
+            schema = json.loads(schema_path.read_text(encoding="utf-8"))
+            skip = schema.setdefault("scope", {}).setdefault("exclude_path_parts", [])
+            for n in [s.strip() for s in never.split(",") if s.strip()]:
+                if n not in skip:
+                    skip.append(n)
+            write_file(schema_path, json.dumps(schema, indent=2, ensure_ascii=False) + "\n")
+            say("Told the check to leave alone: %s" % never)
+        else:
+            say("Could not find the check's rules at _engine/_schema/note-types.json, so the "
+                "folders to leave alone were not recorded. Run Part 2's installer, then this again.")
 
     routes = home / "Resources" / "How material gets in.md"
     routes.write_text(
