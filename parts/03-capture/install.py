@@ -34,6 +34,16 @@ POINTER = Path.home() / ".outliers-sb"
 # lines printed for the member to type.
 PY = "python3" if sys.platform == "darwin" else "python"
 
+# The Mac copy of each part (its name ends in -mac) prints Mac commands, but it is not published
+# yet. Until it is, a Mac member is sent to the same repo as a Windows member, whose code also
+# runs on a Mac. The Mac build plan's wave 6 publishes the Mac copies and sets this 1 line to True.
+MAC_REPOS_PUBLISHED = False
+
+
+def repo(name):
+    """The name of the repo a member downloads the part `name` from, on this computer."""
+    return name + "-mac" if MAC_REPOS_PUBLISHED and sys.platform == "darwin" else name
+
 ASSISTANTS = {
     "the-archivist": ("Documents", "Contracts, reports, proposals, anything of length. Turns them "
                                    "into clean notes and flags anything committing you to a future "
@@ -163,8 +173,8 @@ def main():
     if home is None:
         say("I cannot find a second brain to install this into.", "",
             "Install Layer 1 first:",
-            "   git clone https://github.com/OUTLIERS-ai/outliers-sb-01-memory",
-            "   cd outliers-sb-01-memory", "   %s install.py" % PY, "",
+            "   git clone https://github.com/OUTLIERS-ai/%s" % repo("outliers-sb-01-memory"),
+            "   cd %s" % repo("outliers-sb-01-memory"), "   %s install.py" % PY, "",
             "Nothing has been changed.", "")
         return 1
 
@@ -174,8 +184,8 @@ def main():
         say("Found %s, but Layer %d is not installed there." % (home, NEEDS_LAYER), "",
             "This layer fills your system faster than you can read it, which is exactly why the",
             "check from Layer %d has to be underneath it first." % NEEDS_LAYER, "",
-            "   git clone https://github.com/OUTLIERS-ai/outliers-sb-02-standards",
-            "   cd outliers-sb-02-standards", "   %s install.py" % PY, "",
+            "   git clone https://github.com/OUTLIERS-ai/%s" % repo("outliers-sb-02-standards"),
+            "   cd %s" % repo("outliers-sb-02-standards"), "   %s install.py" % PY, "",
             "Nothing has been changed.", "")
         return 1
 

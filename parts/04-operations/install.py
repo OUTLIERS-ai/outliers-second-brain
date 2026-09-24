@@ -33,6 +33,16 @@ NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 # The command a member types to run Python: "python3" on a Mac, "python" on Windows. Used only in
 # lines printed for the member to type; the programs themselves run with sys.executable.
 PY = "python3" if sys.platform == "darwin" else "python"
+
+# The Mac copy of each part (its name ends in -mac) prints Mac commands, but it is not published
+# yet. Until it is, a Mac member is sent to the same repo as a Windows member, whose code also
+# runs on a Mac. The Mac build plan's wave 6 publishes the Mac copies and sets this 1 line to True.
+MAC_REPOS_PUBLISHED = False
+
+
+def repo(name):
+    """The name of the repo a member downloads the part `name` from, on this computer."""
+    return name + "-mac" if MAC_REPOS_PUBLISHED and sys.platform == "darwin" else name
 IS_MAC = sys.platform == "darwin"
 TASK = "OutliersSecondBrain-Morning"
 MAC_LABEL = "ai.outliers.sb.morning"
@@ -259,8 +269,8 @@ def main():
         say("Found %s, but Layer %d is not installed there." % (home, NEEDS_LAYER), "",
             "This layer arranges things that already work, so there has to be something to",
             "arrange.", "",
-            "   git clone https://github.com/OUTLIERS-ai/outliers-sb-03-capture",
-            "   cd outliers-sb-03-capture", "   %s install.py" % PY, "",
+            "   git clone https://github.com/OUTLIERS-ai/%s" % repo("outliers-sb-03-capture"),
+            "   cd %s" % repo("outliers-sb-03-capture"), "   %s install.py" % PY, "",
             "Nothing has been changed.", "")
         return 1
 
