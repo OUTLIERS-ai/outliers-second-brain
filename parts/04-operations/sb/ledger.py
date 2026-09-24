@@ -24,6 +24,8 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 VAULT = HERE.parent
 LEDGER = VAULT / "_engine" / "events.jsonl"
+# The command a member types to run Python: "python3" on a Mac, "python" on Windows.
+PY = "python3" if sys.platform == "darwin" else "python"
 
 
 def add(what, kind="note", source="hand"):
@@ -59,7 +61,7 @@ def main(argv):
     if argv and argv[0] == "add":
         what = argv[1] if len(argv) > 1 else ""
         if not what:
-            print("  Nothing to write down. Try: python ledger.py add \"what happened\"")
+            print("  Nothing to write down. Try: %s ledger.py add \"what happened\"" % PY)
             return 1
         kind = "note"
         if "--kind" in argv:
@@ -73,7 +75,7 @@ def main(argv):
     rows = read(20)
     if not rows:
         print("\n  Nothing has been written down yet.")
-        print("  Try: python ledger.py add \"finished the pricing page\"\n")
+        print("  Try: %s ledger.py add \"finished the pricing page\"\n" % PY)
         return 0
     print("\n  WHAT HAS HAPPENED  (most recent last)\n")
     for r in rows:

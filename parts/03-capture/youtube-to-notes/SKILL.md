@@ -16,9 +16,9 @@ The second brain is the folder you were started in. Run everything from there.
 
 1. Run the helper that sits beside this file, with every link you were given:
 
-       python "<this skill's folder>/scripts/youtube_words.py" "LINK" "ANOTHER LINK"
+       python3 "<this skill's folder>/scripts/youtube_words.py" "LINK" "ANOTHER LINK"
 
-   On a Mac, if `python` is not found, use `python3`.
+   (on Windows: `python "<this skill's folder>/scripts/youtube_words.py" "LINK" "ANOTHER LINK"`)
 
    A link copied from inside a playlist fetches that one video. Only when the person asks for a
    whole playlist or channel, add `--whole-playlist` before the link. It fetches up to 50 videos;

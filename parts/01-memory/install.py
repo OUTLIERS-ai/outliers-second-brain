@@ -62,6 +62,27 @@ def say(*lines):
         print("  " + ln if ln else "")
 
 
+def default_home():
+    """Where a new second brain goes if you just press Enter.
+
+    On a Mac, a job that starts by itself (the morning list in Part 4) can be refused the
+    Documents folder, so a new Mac second brain goes to ~/Second Brain instead. One that already
+    exists is never moved: if this Mac already has a second brain, that is the answer offered.
+    Windows is unchanged."""
+    documents = Path.home() / "Documents" / "Second Brain"
+    if sys.platform != "darwin":
+        return documents
+    try:
+        p = POINTER.read_text(encoding="utf-8").strip() if POINTER.is_file() else ""
+    except OSError:
+        p = ""
+    if p and (Path(p) / "_layers" / "config.json").exists():
+        return Path(p)
+    if (documents / "_layers" / "config.json").exists():
+        return documents
+    return Path.home() / "Second Brain"
+
+
 def rulebook(business):
     return """# How to work in this second brain
 
@@ -95,8 +116,7 @@ def main():
         "=" * 66, "")
     say("Three questions, then it builds.", "")
 
-    default_home = str(Path.home() / "Documents" / "Second Brain")
-    where = ask("Where should it live?", default_home)
+    where = ask("Where should it live?", str(default_home()))
     home = Path(os.path.expanduser(where)).resolve()
 
     if home.exists() and any(home.iterdir()):

@@ -29,7 +29,7 @@ import re
 import subprocess
 import sys
 import tempfile
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
@@ -39,6 +39,10 @@ VAULT = HERE.parent
 SCHEMA_PATH = HERE / "_schema" / "note-types.json"
 EXPECT_PATH = HERE / "_schema" / "expectations.json"
 REPORT_DIR = HERE / "reports"   # beside the engine, not in a room Layer 1 never made
+# Part 4's morning job keeps its own log in your home folder, outside the second brain, so that a
+# refusal to read the second brain can still be recorded. Read here only if it exists.
+MORNING_LOG = Path.home() / ".outliers-sb-morning.log"
+PY = "python3" if sys.platform == "darwin" else "python"
 
 # WHY 2: non-greedy to the first ']]'. A pattern that excluded ']' from the middle of a link is
 # blind to every note whose filename contains a square bracket.
@@ -275,6 +279,42 @@ def apply_expectations(checks, expect):
     return checks
 
 
+def long_date(stamp):
+    try:
+        return datetime.strptime(stamp[:16], "%Y-%m-%dT%H:%M").strftime("%A %d %B %Y, %H:%M")
+    except ValueError:
+        return stamp
+
+
+def morning_lines():
+    """What Part 4's morning job last did. Nothing at all if Part 4 never ran it. A refusal of a
+    folder this second brain is no longer in (it was moved) is old news and is not shown."""
+    last_written = last_run = None
+    try:
+        with open(str(MORNING_LOG), encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) >= 3:
+                    last_run = parts
+                    if parts[1] == "written":
+                        last_written = parts
+    except OSError:
+        return []
+    here = os.path.normcase(os.path.abspath(str(VAULT)))
+    ours = bool(last_run) and os.path.normcase(os.path.abspath(last_run[2])) == here
+    out = []
+    if ours and last_run[1] == "refused":
+        out.append("  %s refused access to %s on %s. Run %s _engine/today.py for what to do."
+                   % ("macOS" if sys.platform == "darwin" else "The computer",
+                      last_run[2], long_date(last_run[0]), PY))
+    elif ours and last_run[1] == "failed":
+        out.append("  The morning job failed on %s. Run %s _engine/today.py for what to do."
+                   % (long_date(last_run[0]), PY))
+    out.append("  Morning list last written: %s"
+               % (long_date(last_written[0]) if last_written else "never"))
+    return out + [""]
+
+
 def report(checks, scan, links, expect):
     L = ["", "  YOUR SECOND BRAIN - CHECK", "  %s" % VAULT,
          "  %d notes, %d links" % (len(scan.files), links["total"]), ""]
@@ -296,6 +336,7 @@ def report(checks, scan, links, expect):
     L.append("  %s" % ("SOMETHING GOT WORSE - the lines marked WORSE are the only ones to look at."
                        if worse else "Nothing got worse."))
     L.append("")
+    L.extend(morning_lines())
     return "\n".join(L)
 
 

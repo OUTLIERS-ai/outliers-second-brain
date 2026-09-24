@@ -30,6 +30,9 @@ LAYER_NAME = "Standards"
 NEEDS_LAYER = 1
 HERE = Path(__file__).resolve().parent
 POINTER = Path.home() / ".outliers-sb"
+# The command a member types to run Python: "python3" on a Mac, "python" on Windows. Used only in
+# lines printed for the member to type; the programs themselves run with sys.executable.
+PY = "python3" if sys.platform == "darwin" else "python"
 
 
 def ask(question, default=""):
@@ -55,13 +58,23 @@ def looks_installed(p):
     return (Path(p) / "_layers" / "config.json").exists()
 
 
+def places_to_look():
+    """On a Mac a new second brain lives at ~/Second Brain (Part 1 puts it outside Documents), so
+    that is looked at first; one made earlier in Documents is still found. Windows is unchanged."""
+    places = [Path.cwd()]
+    if sys.platform == "darwin":
+        places.append(Path.home() / "Second Brain")
+    places.append(Path.home() / "Documents" / "Second Brain")
+    return places
+
+
 def find_vault():
     """Look where Layer 1 said it put things, then in the obvious places."""
     if POINTER.exists():
         p = POINTER.read_text(encoding="utf-8").strip()
         if p and looks_installed(p):
             return Path(p)
-    for c in (Path.cwd(), Path.home() / "Documents" / "Second Brain"):
+    for c in places_to_look():
         if looks_installed(c):
             return Path(c)
     return None
@@ -77,7 +90,7 @@ def main():
             "This layer sits on top of Layer %d. Install that first:" % NEEDS_LAYER,
             "   git clone https://github.com/OUTLIERS-ai/outliers-sb-01-memory",
             "   cd outliers-sb-01-memory",
-            "   python install.py", "", "Nothing has been changed.", "")
+            "   %s install.py" % PY, "", "Nothing has been changed.", "")
         return 1
 
     cfg_path = home / "_layers" / "config.json"
@@ -132,9 +145,9 @@ def main():
 
     say("-" * 66, "")
     say("From now on:", "",
-        "   python _engine/doctor.py      see what changed",
-        "   python _engine/repair.py      show what could be fixed automatically",
-        "   python _engine/repair.py --apply    fix it", "")
+        "   %-30ssee what changed" % (PY + " _engine/doctor.py"),
+        "   %-30sshow what could be fixed automatically" % (PY + " _engine/repair.py"),
+        "   %s _engine/repair.py --apply    fix it" % PY, "")
     if run_alone:
         say("You said the check should run on its own. It has no timetable of its own yet -",
             "that arrives in Layer 4, which is where things start running to a clock.", "")

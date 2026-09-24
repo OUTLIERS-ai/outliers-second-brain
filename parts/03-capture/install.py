@@ -30,6 +30,9 @@ LAYER_NAME = "Capture"
 NEEDS_LAYER = 2
 HERE = Path(__file__).resolve().parent
 POINTER = Path.home() / ".outliers-sb"
+# The command a member types to run Python: "python3" on a Mac, "python" on Windows. Used only in
+# lines printed for the member to type.
+PY = "python3" if sys.platform == "darwin" else "python"
 
 ASSISTANTS = {
     "the-archivist": ("Documents", "Contracts, reports, proposals, anything of length. Turns them "
@@ -131,12 +134,22 @@ def say(*lines):
         print("  " + ln if ln else "")
 
 
+def places_to_look():
+    """On a Mac a new second brain lives at ~/Second Brain (Part 1 puts it outside Documents), so
+    that is looked at first; one made earlier in Documents is still found. Windows is unchanged."""
+    places = [Path.cwd()]
+    if sys.platform == "darwin":
+        places.append(Path.home() / "Second Brain")
+    places.append(Path.home() / "Documents" / "Second Brain")
+    return places
+
+
 def find_vault():
     if POINTER.exists():
         p = POINTER.read_text(encoding="utf-8").strip()
         if p and (Path(p) / "_layers" / "config.json").exists():
             return Path(p)
-    for c in (Path.cwd(), Path.home() / "Documents" / "Second Brain"):
+    for c in places_to_look():
         if (Path(c) / "_layers" / "config.json").exists():
             return Path(c)
     return None
@@ -151,7 +164,7 @@ def main():
         say("I cannot find a second brain to install this into.", "",
             "Install Layer 1 first:",
             "   git clone https://github.com/OUTLIERS-ai/outliers-sb-01-memory",
-            "   cd outliers-sb-01-memory", "   python install.py", "",
+            "   cd outliers-sb-01-memory", "   %s install.py" % PY, "",
             "Nothing has been changed.", "")
         return 1
 
@@ -162,7 +175,7 @@ def main():
             "This layer fills your system faster than you can read it, which is exactly why the",
             "check from Layer %d has to be underneath it first." % NEEDS_LAYER, "",
             "   git clone https://github.com/OUTLIERS-ai/outliers-sb-02-standards",
-            "   cd outliers-sb-02-standards", "   python install.py", "",
+            "   cd outliers-sb-02-standards", "   %s install.py" % PY, "",
             "Nothing has been changed.", "")
         return 1
 
